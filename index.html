@@ -9,7 +9,8 @@
 </head>
 
 <body>
-    <h3>Web workers</h3>
+
+    <h1>Examples of using web workers</h1>
     <p>Un Web Worker est donc une façon d’appeler un script JavaScript qui va s’exécuter dans un Thread différent de
         celui du
         script qui le crée. Il est possible pour les deux scripts de communiquer ensemble via l’envoi et la réception de
@@ -25,6 +26,12 @@
     </p>
 
     <hr>
+    <p>To run a <em>Worker</em>, we declare it and reference the name of a <em>.js</em> file that contains the code the
+        <em>Worker</em> will run. Then <em>main</em> communicates with the <em>Worker</em> by emmitting messages with
+        the <em>postMessage</em> method, and listens to messages with <em>onmessage</em> (shortcut for
+        <em>worker.addEventListener('message', callback)
+        </em>)
+        method. </p>
     <p>
         <button onClick="ping()">Ping</button><span> See response in console</span>
         <br>
@@ -40,23 +47,33 @@
         <button onClick="runWorker()">Test!</button><span id="workerRun"> </span>
     </p>
 
-    <hr>
-    <p><button onClick="calc()">Calcutate</button> <span> and see result in console</span></p>
 
-
-
-
-    <br>
+    <h1>Examples of using Blobs</h1>
+    <h3> Stylesheet stored in a blob</h3>
+    <p>We stored <em>CSS</em> in the a <em>blob</em>, and then create a <em>link</em> element, and set it's
+        <em>href</em> attribute as the URL of the blob. We put the <em>h1</em> with background yellow and the
+        <em>button</em> have text in red. </h1>
+    </p>
     <h3>Exemple du display du data d'un blob avec FileReader</h3>
+    <p>The test below is the data array of a <em>blob</em> and we use a <em>FileReader</em> to read asynchronously the
+        data and when finished, the <em>loadend</em> event of the <em>FileReader</em> callback the attachment to the
+        DOM.</p>
     <div id="insertFile"></div>
 
     <br>
     <h3>Exemple du display du data d'un blob via un link</h3>
+    <p>We create an <em>'a'</em> link and sets it's <em>href</em> attribute to be the <em>URL</em> of a blob. Follow the
+        link to see what's in the data of the blob</p>
     <div id="insertLink"></div>
 
     <br>
     <div id="linkbody"></div>
 
+    <h3>Exemple of blob and web worker</h3>
+    <p>We hardcode a <em>'script'</em> in the data array of a blob. When we create a <em>Worker</em>, we usaully link to
+        a file. In this case, we link it to the URL of the blob. The <em>Worker</em> will then run the code of the
+        <em>blob</em> </p>
+    <p><button onClick="calc()">Calcutate</button> <span> and see result in console</span></p>
 
     <script>
 
@@ -108,7 +125,7 @@
         ////////////////////////////////////
         // creating CSS style:  <link rel="stylesheet" href="blobURL">
         const styleBodyWithBlob = new Blob(
-            ['h3 { background-color: yellow; } button {color: red; font-size:20px;}'],
+            ['h3, h1 { background-color: yellow; } button {color: red; font-size:20px;}'],
             { type: 'text/css' }
         );
         const link = document.createElement('link');
@@ -119,8 +136,8 @@
         ////////////////////////////////////////
         // FileReader and Blob
         const textBlobHtml = new Blob(
-            ["<p>Worker allows a page to run Javascript on a background thread so the main UI thread can remain responsive. Workers do not have access to the DOM or any global variables in the main UI thread and must use the <code>postMessage()</Code method to communicate with the main thread.</p>",
-                "<p>The FileReader object lets web applications asynchronously read the contents of files (or raw data buffers) stored on the user's computer, using File or Blob objects to specify the file or data to read.</p>"
+            ["<p>\"Workers allows a page to run Javascript on a background thread so the main UI thread can remain responsive. Workers do not have access to the DOM or any global variables in the main UI thread and must use the <code>postMessage()</Code method to communicate with the main thread.</p>",
+                "<p>The FileReader object lets web applications asynchronously read the contents of files (or raw data buffers) stored on the user's computer, using File or Blob objects to specify the file or data to read.\"</p>"
             ],
             { type: "text/html" }
         )
@@ -148,29 +165,20 @@
             :</span> `
     </script>
 
-    <script id='code' type='text/plain'>
-        onmessage = function(event) {
-            console.log(event)
-            postMessage(event.data * event.data);
-        };
-    </script>
+
 
     <script>
         // instead of using an external file, we hardcode a script here and will pass this code into a blob
         // that will point to it.
-
-
-        // le data du blob contient un string qui est du code
-        const code = document.getElementById('code').textContent;
-        const blob = new Blob(
-            [code],
+        const blobCode = new Blob(
+            ['onmessage = function(event) \{ console\.log(event)\; postMessage(event.data * event.data) \}\;'],
             { type: 'application/javascript' }
         );
         // we create a link to this code
-        const url = URL.createObjectURL(blob);
+        const codeURL = URL.createObjectURL(blobCode);
 
         // Creates and starts a background thread that runs the code pointed at by scriptURL of type 'string'
-        const worker3 = new Worker(url);
+        const worker3 = new Worker(codeURL);
 
         /////////////////////////////
         // Workers use the postMessage() method to communicate with the main thread
@@ -184,7 +192,6 @@
         worker3.onmessage = function (event) {
             console.log('worker returned: ', event.data);
         };
-
     </script>
 
 
