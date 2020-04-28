@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workers & blobs</title>
+
+</head>
+
+<body>
+    <h3>Exemple Web worker</h3>
+    <p>Un Web Worker est donc une façon d’appeler un script JavaScript qui va s’exécuter dans un Thread différent de
+        celui du
+        script qui le crée. Il est possible pour les deux scripts de communiquer ensemble via l’envoi et la réception de
+        messages. Un Web Worker n’est cependant pas léger et n’est pas à utiliser à tort ou à travers. La création est
+        un
+        processus coûteux, notamment en mémoire. Il peut cependant grandement soulager l’affichage et la mise à jour
+        d’une page
+        web si vous avez à réaliser des calculs complexes ou des opérations régulières qui peuvent ne rien changer à
+        votre page.
+        Typiquement, si vous voulez faire des vérifications régulières sur une API et comparer vos données en cache à
+        vos
+        données affichées pour savoir ce que vous allez modifier, ce peut être une bonne idée d’utiliser un Web Worker.
+    </p>
+
+    <button onClick="ping()">Ping</button>
+
+    <button onClick="ping2()">Ping shared</button>
+
+    <button onClick="calc()">Calcutate</button>
+
+    <br>
+    <h3>Exemple du display du data d'un blob avec FileReader</h3>
+    <div id="insertFile"></div>
+
+    <br>
+    <h3>Exemple du display du data d'un blob via un link</h3>
+    <div id="insertLink"></div>
+
+    <br>
+    <div id="linkbody"></div>
+
+
+    <script>
+        const worker1 = new Worker('worker.js');
+
+        const ping = function () {
+            worker1.postMessage("ping");
+        }
+        worker1.onmessage = function (event) {
+            console.log(event.data);
+        }
+
+        ///
+        const worker2 = new SharedWorker('sharedWorker.js');
+        worker2.port.start();
+
+        const ping2 = function () {
+            console.log("p2")
+            worker2.port.postMessage("ping");
+        }
+
+        worker2.port.onmessage = function (event) {
+            console.log(event.data);
+        }
+
+
+
+        ////////////////////////////////////
+        // creating CSS style:  <link rel="stylesheet" href="blobURL">
+        const styleBodyWithBlob = new Blob(
+            ['h3 { background-color: yellow; }'],
+            { type: 'text/css' }
+        );
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = URL.createObjectURL(styleBodyWithBlob);
+        document.head.appendChild(link);
+
+        ////////////////////////////////////////
+        // FileReader and Blob
+        const textBlobHtml = new Blob(
+            ["<p>Worker allows a page to run Javascript on a background thread so the main UI thread can remain responsive. Workers do not have access to the DOM or any global variables in the main UI thread and must use the <code>postMessage()</Code method to communicate with the main thread.</p>",
+                "<p>The FileReader object lets web applications asynchronously read the contents of files (or raw data buffers) stored on the user's computer, using File or Blob objects to specify the file or data to read.</p>"
+            ],
+            { type: "text/html" }
+        )
+        // the FileReader lets web app load asynchronously contents of files-blobs
+        const myReader = new FileReader();
+        myReader.readAsText(textBlobHtml)
+        // Handler executed once reading(blob content referenced to a variable) from blob is finished. 
+        myReader.addEventListener("loadend", (e) => { // short-cut= myReader.onload = (e)=> {...}
+            document.getElementById('insertFile').innerHTML = e.target.result;
+        });
+
+        ////////////////////////////////////////
+
+        // the data of the blob will be displayed as the result of a link
+        const blobLink = new Blob(
+            ["<h1 style=\"color:red\">I am the data of the blob</h1 > ", " <p> Yet another line</p> "],
+            { type: 'text/html' }
+        )
+        // we create a link to this data-blob
+        const blobLinkURL = URL.createObjectURL(blobLink)
+
+        // the link is added to the DOM which will display the data-blob
+        document.getElementById('insertLink').innerHTML =
+            ` <a href="${blobLinkURL}">This link</a> <span> will display the data (text/html) of a blob showed below
+            :</span> `
+    </script>
+
+    <script id='code' type='text/plain'>
+        onmessage = function(event) {
+            console.log(event)
+            postMessage(event.data * event.data);
+        };
+    </script>
+
+    <script>
+        // instead of using an external file, we hardcode a script here and will pass this code into a blob
+        // that will point to it.
+
+
+        // le data du blob contient un string qui est du code
+        const code = document.getElementById('code').textContent;
+        const blob = new Blob(
+            [code],
+            { type: 'application/javascript' }
+        );
+        // we create a link to this code
+        const url = URL.createObjectURL(blob);
+
+        // Creates and starts a background thread that runs the code pointed at by scriptURL of type 'string'
+        const worker3 = new Worker(url);
+
+        /////////////////////////////
+        // Workers use the postMessage() method to communicate with the main thread
+        // this is triggered here with a clic button
+        const calc = () => {
+            const nb = prompt('enter a number')
+            worker3.postMessage(nb); // we send the object 'nb' to the worker 
+        }
+
+        // Fires when the worker calls postMessage(). The message passed to postMessage is in event.data.
+        worker3.onmessage = function (event) {
+            console.log('worker returned: ', event.data);
+        };
+
+    </script>
+
+
+</body>
+
+</html>
