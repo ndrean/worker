@@ -1,6 +1,10 @@
 Testing web workers and blobs and File
 
-##
+## Live at:
+
+<https://ndrean.github.io/worker/>
+
+## Web work in short
 
 To run a _Worker_, we declare it and reference the name of a _.js_ file that contains the code the
 _Worker_ will run. Then _main_ communicates with the _Worker_ by emmitting messages with
