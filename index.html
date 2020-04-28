@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    <h3>Exemple Web worker</h3>
+    <h3>Web workers</h3>
     <p>Un Web Worker est donc une façon d’appeler un script JavaScript qui va s’exécuter dans un Thread différent de
         celui du
         script qui le crée. Il est possible pour les deux scripts de communiquer ensemble via l’envoi et la réception de
@@ -24,11 +24,27 @@
         données affichées pour savoir ce que vous allez modifier, ce peut être une bonne idée d’utiliser un Web Worker.
     </p>
 
-    <button onClick="ping()">Ping</button>
+    <hr>
+    <p>
+        <button onClick="ping()">Ping</button><span> See response in console</span>
+        <br>
+        <button onClick="stopPing()"> Kill the worker</button>
+    </p>
+    <hr>
+    <h5>Direct computation in a script</h5>
+    <p>This button runs a code that will freeze the browser for approx 10s. Clic to test :
+        <button onClick="longRun()">Test!</button><span id="longRun"> </span>
+    </p>
+    <h5>Parallel computation with a web worker</h5>
+    <p>The same code run by a web worker. Becomes a background none blocking job.
+        <button onClick="runWorker()">Test!</button><span id="workerRun"> </span>
+    </p>
 
-    <button onClick="ping2()">Ping shared</button>
+    <hr>
+    <p><button onClick="calc()">Calcutate</button> <span> and see result in console</span></p>
 
-    <button onClick="calc()">Calcutate</button>
+
+
 
     <br>
     <h3>Exemple du display du data d'un blob avec FileReader</h3>
@@ -43,34 +59,56 @@
 
 
     <script>
+
+        const longRun = () => {
+            console.log("browser freezed!...")
+            const start = Date.now(); // milliseconds
+            let x = 0;
+            for (let i = 0; i < 8000000000; i++) {
+                x = x + i;
+            }
+            const result = -(start - Date.now()) / 1000
+            console.log('ended in : ', result, ' seconds');
+            document.getElementById('longRun').textContent = result
+        }
+
+        const worker = new Worker('long.js')
+        const runWorker = () => {
+            console.log("starting worker...")
+            document.getElementById('workerRun').textContent = "No freeze, can display this, just // computing..."
+            worker.postMessage("start")
+        }
+        worker.onmessage = (e) => {
+            const result = e.data
+            console.log(result)
+            document.getElementById('workerRun').textContent = result
+        }
+
+        //////
         const worker1 = new Worker('worker.js');
 
         const ping = function () {
-            worker1.postMessage("ping");
+            worker1.postMessage("Ping")
         }
-        worker1.onmessage = function (event) {
-            console.log(event.data);
+        worker1.addEventListener('message', (event) => {
+            const response = event.data
+            console.log(response);
+        })
+        // shortcut: worker1.onmessage = function (event) {...}
+
+
+        const stopPing = function () {
+            alert("this will terminate this worker")
+            worker1.terminate()
         }
 
-        ///
-        const worker2 = new SharedWorker('sharedWorker.js');
-        worker2.port.start();
-
-        const ping2 = function () {
-            console.log("p2")
-            worker2.port.postMessage("ping");
-        }
-
-        worker2.port.onmessage = function (event) {
-            console.log(event.data);
-        }
 
 
 
         ////////////////////////////////////
         // creating CSS style:  <link rel="stylesheet" href="blobURL">
         const styleBodyWithBlob = new Blob(
-            ['h3 { background-color: yellow; }'],
+            ['h3 { background-color: yellow; } button {color: red; font-size:20px;}'],
             { type: 'text/css' }
         );
         const link = document.createElement('link');

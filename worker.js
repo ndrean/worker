@@ -1,4 +1,5 @@
-onmessage = function (e) {
+self.onmessage = function (e) {
   console.log("received in the worker: ", e.data);
-  postMessage("pong");
+  const response = e.data.toUpperCase();
+  postMessage("Answer from the worker: " + response);
 };
