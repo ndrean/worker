@@ -5,194 +5,209 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workers & blobs</title>
-
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+        integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 </head>
 
 <body>
+    <div class="container">
+        <div class="row">
+            <h1>Examples of using web workers</h1>
+            <p>Un Web Worker est une façon d’appeler un script JavaScript qui va s’exécuter dans un Thread différent de
+                celui du script qui le crée. Il est possible pour les deux scripts de communiquer ensemble via l’envoi
+                et la réception de
+                messages. </p>
+            <note>Un Web Worker n’est cependant pas léger et n’est pas à utiliser à tort ou à travers. La création est
+                un processus coûteux, notamment en mémoire.</note>
 
-    <h1>Examples of using web workers</h1>
-    <p>Un Web Worker est donc une façon d’appeler un script JavaScript qui va s’exécuter dans un Thread différent de
-        celui du
-        script qui le crée. Il est possible pour les deux scripts de communiquer ensemble via l’envoi et la réception de
-        messages. Un Web Worker n’est cependant pas léger et n’est pas à utiliser à tort ou à travers. La création est
-        un
-        processus coûteux, notamment en mémoire. Il peut cependant grandement soulager l’affichage et la mise à jour
-        d’une page
-        web si vous avez à réaliser des calculs complexes ou des opérations régulières qui peuvent ne rien changer à
-        votre page.
-        Typiquement, si vous voulez faire des vérifications régulières sur une API et comparer vos données en cache à
-        vos
-        données affichées pour savoir ce que vous allez modifier, ce peut être une bonne idée d’utiliser un Web Worker.
-    </p>
+            <p>Typiquement, si vous voulez faire des vérifications régulières sur une API et comparer vos données en
+                cache à vos données affichées pour savoir ce que vous allez modifier, ce peut être une bonne idée
+                d’utiliser un Web Worker.</p>
+            <p>Workers do NOT have access to the DOM (it's not thread-safe), nor the window object, nor
+                the parent object</p>
 
-    <hr>
-    <p>To run a <em>Worker</em>, we declare it and reference the name of a <em>.js</em> file that contains the code the
-        <em>Worker</em> will run. Then <em>main</em> communicates with the <em>Worker</em> by emmitting messages with
-        the <em>postMessage</em> method, and listens to messages with <em>onmessage</em> (shortcut for
-        <em>worker.addEventListener('message', callback)
-        </em>)
-        method. </p>
-    <p>
-        <button onClick="ping()">Ping</button><span> See response in console</span>
-        <br>
-        <button onClick="stopPing()"> Kill the worker</button>
-    </p>
-    <hr>
-    <h5>Direct computation in a script</h5>
-    <p>This button runs a code that will freeze the browser for approx 10s. Clic to test :
-        <button onClick="longRun()">Test!</button><span id="longRun"> </span>
-    </p>
-    <h5>Parallel computation with a web worker</h5>
-    <p>The same code run by a web worker. Becomes a background none blocking job.
-        <button onClick="runWorker()">Test!</button><span id="workerRun"> </span>
-    </p>
+        </div>
 
+        <div class="row">
 
-    <h1>Examples of using Blobs</h1>
-    <h3> Stylesheet stored in a blob</h3>
-    <p>We stored <em>CSS</em> in the a <em>blob</em>, and then create a <em>link</em> element, and set it's
-        <em>href</em> attribute as the URL of the blob. We put the <em>h1</em> with background yellow and the
-        <em>button</em> have text in red. </h1>
-    </p>
-    <h3>Exemple du display du data d'un blob avec FileReader</h3>
-    <p>The test below is the data array of a <em>blob</em> and we use a <em>FileReader</em> to read asynchronously the
-        data and when finished, the <em>loadend</em> event of the <em>FileReader</em> callback the attachment to the
-        DOM.</p>
-    <div id="insertFile"></div>
+            <h2>Example with a long computational task</h2>
 
-    <br>
-    <h3>Exemple du display du data d'un blob via un link</h3>
-    <p>We create an <em>'a'</em> link and sets it's <em>href</em> attribute to be the <em>URL</em> of a blob. Follow the
-        link to see what's in the data of the blob</p>
-    <div id="insertLink"></div>
+            <h3>Direct computation</h3>
+            <p>Consider the code contained in the file <em>long.js</em>. It is a computational intensive
+                code. </p>
+            <pre>
+            # calc.js
+            const compute = async () => {
+                const start = Date.now(); // milliseconds
+                let x = 0;
+                for (let i = 0; i < 8000000000; i++) { x=x + i; }
+                return -((start - Date.now()) / 1000);
+            };
+            </pre>
+            <p>The button below runs this code that will freeze the browser for approx 10s. Clic to test :</p>
 
-    <br>
-    <div id="linkbody"></div>
+            <pre>
+                    &ltbutton id="calFreeze">Test!&lt/button>
+                    &ltspan id="longRun">&lt/span>
+            </pre>
 
-    <h3>Exemple of blob and web worker</h3>
-    <p>We hardcode a <em>'script'</em> in the data array of a blob. When we create a <em>Worker</em>, we usaully link to
-        a file. In this case, we link it to the URL of the blob. The <em>Worker</em> will then run the code of the
-        <em>blob</em> </p>
-    <p><button onClick="calc()">Calcutate</button> <span> and see result in console</span></p>
-
-    <script>
-
-        const longRun = () => {
-            console.log("browser freezed!...")
-            const start = Date.now(); // milliseconds
-            let x = 0;
-            for (let i = 0; i < 8000000000; i++) {
-                x = x + i;
-            }
-            const result = -(start - Date.now()) / 1000
-            console.log('ended in : ', result, ' seconds');
-            document.getElementById('longRun').textContent = result
-        }
-
-        const worker = new Worker('long.js')
-        const runWorker = () => {
-            console.log("starting worker...")
-            document.getElementById('workerRun').textContent = "No freeze, can display this, just // computing..."
-            worker.postMessage("start")
-        }
-        worker.onmessage = (e) => {
-            const result = e.data
-            console.log(result)
-            document.getElementById('workerRun').textContent = result
-        }
-
-        //////
-        const worker1 = new Worker('worker.js');
-
-        const ping = function () {
-            worker1.postMessage("Ping")
-        }
-        worker1.addEventListener('message', (event) => {
-            const response = event.data
-            console.log(response);
-        })
-        // shortcut: worker1.onmessage = function (event) {...}
-
-
-        const stopPing = function () {
-            alert("this will terminate this worker")
-            worker1.terminate()
-        }
+            <br>
+            <button id="calcFreeze" class="btn btn-primary">Freeze me!</button>
+            <span id="longRun"></span><br>
+            <p>This input is <strong>freezed</strong> during computation time: </p>
+            <form id="form1">
+                <input type="text" id="input1">
+                <button type="submit" class="btn btn-info">Check!</button>
+                <span id="span1"></span>
+            </form>
 
 
 
+            <hr>
+            <h3>Computation with worker</h3>
+            <p>The same job run with a worker becomes a background non-blocking job</p>
+            <button id="calcworker" class="btn btn-success">Run worker!</button><span id="workerRun"> </span>
+            <p>This input is <strong>NOT</strong> freezed during computation time</p>
+            <form id="form2">
+                <input type="text" id="input2">
+                <button type="submit" class="btn btn-info">Check!</button>
+                <span id="span2"></span>
+                <span id="span3"></span>
+            </form>
+            <br>
+            <button id="stopworker" class="btn btn-success">Definitely stops the worker!</button>
+            <br>
+            <p>We run the same script but through a <em>worker</em>. In this case, the browser
+                is no more freezed.</p>
+            <p>In the main file <em>index.js</em>, we first instanciate a <em>Worker</em> object with
+                <code>new Worker('file.js')</code> where we specify the file which contains the code that the
+                worker has to run.</p>.
+            In the same file <em>index.js</em>, we start the worker with the method <code>worker.postMessage()</code>.
+            </p>
+            <p>The <em>worker</em> communicates with the main parent thread with an event <em>"message"</em> and
+                this same <code>postMessage()</code> method. This method accepts a string or a JSON object.</p>
+            <pre>
+                #index.js
+                // declare a new Worker
+                const worker = new Worker('calcWithWorker.js')
 
-        ////////////////////////////////////
-        // creating CSS style:  <link rel="stylesheet" href="blobURL">
-        const styleBodyWithBlob = new Blob(
-            ['h3, h1 { background-color: yellow; } button {color: red; font-size:20px;}'],
-            { type: 'text/css' }
-        );
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = URL.createObjectURL(styleBodyWithBlob);
-        document.head.appendChild(link);
+                // start the worker and pass him a message, here JSON
+                const runWorker = () => {
+                    worker.postMessage({ cmd: "start", msg: "Starting..." });
+                    document.getElementById('workerRun').textContent = "No freeze, can display this, just // computing..."
+                }
 
-        ////////////////////////////////////////
-        // FileReader and Blob
-        const textBlobHtml = new Blob(
-            ["<p>\"Workers allows a page to run Javascript on a background thread so the main UI thread can remain responsive. Workers do not have access to the DOM or any global variables in the main UI thread and must use the <code>postMessage()</Code method to communicate with the main thread.</p>",
-                "<p>The FileReader object lets web applications asynchronously read the contents of files (or raw data buffers) stored on the user's computer, using File or Blob objects to specify the file or data to read.\"</p>"
-            ],
-            { type: "text/html" }
-        )
-        // the FileReader lets web app load asynchronously contents of files-blobs
-        const myReader = new FileReader();
-        myReader.readAsText(textBlobHtml)
-        // Handler executed once reading(blob content referenced to a variable) from blob is finished. 
-        myReader.addEventListener("loadend", (e) => { // short-cut= myReader.onload = (e)=> {...}
-            document.getElementById('insertFile').innerHTML = e.target.result;
-        });
+                // we make the worker listen to "message" events
+                document.querySelector("#calcworker").addEventListener("click", () => {
+                    // start the worker's job
+                    runWorker();
+                    // when finishde the job, display the message from the worker
+                    worker.addEventListener("message", (e) => {
+                        document.getElementById("workerRun").textContent = e.data;
+                    });
+                // worker.onmessage is a shortcut
+                });
+            </pre>
+            <pre>
+                # calcWithWorker.js
+                self.addEventListener("message", (e) => {
+                    const sentMsg = e.data;
+                    console.log("received in the worker: ", sentMsg.cmd);
+                    // the worker posts a message to the main thread
+                    self.postMessage(`${sentMsg.msg} to work!`);
+                    });
+                });
+                
+                self.addEventListener("message", () => {
+                    const start = Date.now(); // milliseconds
+                    let x = 0;
+                    for (let i = 0; i < 8000000000; i++) { x=x + i; }
+                    const result=(Date.now() - start) / 1000;
+                    console.log("Time needed :", result);
+                    self.postMessage(result);
+                });
 
-        ////////////////////////////////////////
+            </pre>
+        </div>
+        <div class="row">
+            <h1>Example using a blob</h1>
 
-        // the data of the blob will be displayed as the result of a link
-        const blobLink = new Blob(
-            ["<h1 style=\"color:red\">I am the data of the blob</h1 > ", " <p> Yet another line</p> "],
-            { type: 'text/html' }
-        )
-        // we create a link to this data-blob
-        const blobLinkURL = URL.createObjectURL(blobLink)
+            <p>We hardcode a <em>'script'</em> in the data array of a blb, thus declare the array as of
+                type <code>application/javascript</code>. When we create a <em>Worker</em>, we usually
+                link to a file. In this case, we link to the URL of the blob which contains a script.
+                The <em>Worker</em> will then simply run the code of the <em>blob</em>.
+            </p>
 
-        // the link is added to the DOM which will display the data-blob
-        document.getElementById('insertLink').innerHTML =
-            ` <a href="${blobLinkURL}">This link</a> <span> will display the data (text/html) of a blob showed below
-            :</span> `
-    </script>
+            <form id="findPrime">
+                <input type="text" name="nb" placeholder="Enter a positive integer">
+                <button id="primes">Check for prime</button>
+                <span id="isPrime"></span>
+            </form>
+        </div>
+        <p>In the code, we use the shortcut <code>onmessage</code> for
+            <code>self.AddEventListener('message', callback)</code>. Then we define a function
+            that searches for the divisors of a given number. We apply it to <em>e.data</em> and let the
+            worker post the message to the main thread.</p>
+        <pre>
+            # index.js
+            const blobCode = new Blob([
+                `onmessage = function(e) \{
+                    function isPrime(value) \{
+                        const x = parseInt(value);
+                        for (let i = 2; i <= x; i++) \{
+                            if (value % i===0) \{
+                                return \{
+                                    first_div: i,
+                                    check: i===x ? true : false,
+                                \};
+                            \}
+                        \}
+                    \};
+                self.postMessage(isPrime(e.data));
+                \};`,
+                ], { type: "application/javascript" , }
+            );
+                
+            // we create a link to this code
+            const codeURL=URL.createObjectURL(blobCode);
+             // Creates and starts a background thread that runs the code pointed at by scriptURL of type 'string' 
+            const primeWorker=new Worker(codeURL);
+        </pre>
+        <p>Then we have a listener on the form to pass the input to the worker by
+            <code>primeWorker.psotMessage(input)</code>. Then we have a lsitener on the worker
+            to capture the message <code>e.data</code> sent by the worker.</p>
+        <div class="row">
 
 
+            <h3> Stylesheet stored in a blob</h3>
+            <p>We stored <em>CSS</em> in the a <em>blob</em>, and then create a <em>link</em> element, and set it's
+                <em>href</em> attribute as the URL of the blob. We put the <em>h1</em> with background yellow and the
+                <em>button</em> have text in red. </h1>
+            </p>
+            <h3>Exemple du display du data d'un blob avec FileReader</h3>
+            <p>The test below is the data array of a <em>blob</em> and we use a <em>FileReader</em> to read
+                asynchronously the
+                data and when finished, the <em>loadend</em> event of the <em>FileReader</em> callback the attachment to
+                the
+                DOM.</p>
+            <div id="insertFile"></div>
 
-    <script>
-        // instead of using an external file, we hardcode a script here and will pass this code into a blob
-        // that will point to it.
-        const blobCode = new Blob(
-            ['onmessage = function(event) \{ console\.log(event)\; postMessage(event.data * event.data) \}\;'],
-            { type: 'application/javascript' }
-        );
-        // we create a link to this code
-        const codeURL = URL.createObjectURL(blobCode);
+            <br>
+            <h3>Exemple du display du data d'un blob via un link</h3>
+            <p>We create an <em>'a'</em> link and sets it's <em>href</em> attribute to be the <em>URL</em> of a blob.
+                Follow the
+                link to see what's in the data of the blob</p>
+            <div id="insertLink"></div>
 
-        // Creates and starts a background thread that runs the code pointed at by scriptURL of type 'string'
-        const worker3 = new Worker(codeURL);
+            <br>
+            <div id="linkbody"></div>
 
-        /////////////////////////////
-        // Workers use the postMessage() method to communicate with the main thread
-        // this is triggered here with a clic button
-        const calc = () => {
-            const nb = prompt('enter a number')
-            worker3.postMessage(nb); // we send the object 'nb' to the worker 
-        }
+            <h3>Exemple of blob and web worker</h3>
+        </div>
+    </div>
 
-        // Fires when the worker calls postMessage(). The message passed to postMessage is in event.data.
-        worker3.onmessage = function (event) {
-            console.log('worker returned: ', event.data);
-        };
-    </script>
+    <script type="module" src="index.js"></script>
+    <script type="module" src="calc.js"></script>
 
 
 </body>

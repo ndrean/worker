@@ -1,0 +1,22 @@
+{
+  "name": "worker",
+  "version": "1.0.0",
+  "description": "test workers",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ndrean/worker.git"
+  },
+  "keywords": [
+    "worker"
+  ],
+  "author": "ndrean",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ndrean/worker/issues"
+  },
+  "homepage": "https://github.com/ndrean/worker#readme"
+}
